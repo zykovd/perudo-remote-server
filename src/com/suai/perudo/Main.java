@@ -8,10 +8,8 @@ public class Main {
     public static void main(String[] args) {
         int port = 8080;
         try {
-            new PerudoServer(port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+            new PerudoServer(port).start();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

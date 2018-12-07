@@ -50,4 +50,8 @@ class Party {
     public void addPlayer(WebUser webUser, Player player) {
         players.put(webUser, player);
     }
+
+    public long getId() {
+        return id;
+    }
 }

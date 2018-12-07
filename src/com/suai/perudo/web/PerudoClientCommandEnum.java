@@ -11,5 +11,6 @@ public enum PerudoClientCommandEnum {
     MAPUTO,
     JOIN,
     GET_PARTIES,
-    NEW_PARTY
+    NEW_PARTY,
+    DISCONNECT
 }

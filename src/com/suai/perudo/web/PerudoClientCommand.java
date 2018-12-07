@@ -19,6 +19,7 @@ public class PerudoClientCommand implements Serializable{
     private boolean isJoin = false;
     private boolean isGetParties = false;
     private boolean isNewParty = false;
+    private boolean isDisconnect = false;
 
     private int currentBidQuantity = 0;
     private int currentBidValue = 0;
@@ -48,6 +49,9 @@ public class PerudoClientCommand implements Serializable{
             case NEW_PARTY:
                 isNewParty = true;
                 break;
+            case DISCONNECT:
+                isDisconnect = true;
+                break;
         }
     }
 
@@ -71,6 +75,12 @@ public class PerudoClientCommand implements Serializable{
                 break;
             case GET_PARTIES:
                 isGetParties = true;
+                break;
+            case NEW_PARTY:
+                isNewParty = true;
+                break;
+            case DISCONNECT:
+                isDisconnect = true;
                 break;
         }
     }
@@ -96,6 +106,12 @@ public class PerudoClientCommand implements Serializable{
                 break;
             case GET_PARTIES:
                 isGetParties = true;
+                break;
+            case NEW_PARTY:
+                isNewParty = true;
+                break;
+            case DISCONNECT:
+                isDisconnect = true;
                 break;
         }
     }
@@ -134,6 +150,10 @@ public class PerudoClientCommand implements Serializable{
 
     public boolean isGameCommand() {
         return isBid | isDoubt | isLeave | isMaputo;
+    }
+
+    public boolean isDisconnect() {
+        return isDisconnect;
     }
 
     public Pair getBid() {

@@ -37,6 +37,8 @@ public class PerudoServer extends Thread{
 
     public PerudoServer(int port) throws IOException, ClassNotFoundException {
         this.port = port;
+        System.out.println("PerudoServer.PerudoServer");
+        System.out.println("port = " + port);
     }
 
     @Override
@@ -44,29 +46,38 @@ public class PerudoServer extends Thread{
         super.run();
         try {
             this.serverSocket = new ServerSocket(port);
-            String address = serverSocket.getLocalSocketAddress().toString();
-            System.out.println(address);
+            String address = serverSocket.getInetAddress().getCanonicalHostName();
+            System.out.println("address = " + address);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        while (true) {
-            try {
-                Socket clientSocket = serverSocket.accept();
+        try {
+            while (true) {
+                try {
+                    Socket clientSocket = serverSocket.accept();
 
-                WebUser webUser = new WebUser(clientSocket);
-                DataInputStream dataInputStream = webUser.getDataInputStream();
-                Player player = gson.fromJson(dataInputStream.readUTF(), Player.class);
+                    WebUser webUser = new WebUser(clientSocket);
+                    DataInputStream dataInputStream = webUser.getDataInputStream();
+                    Player player = gson.fromJson(dataInputStream.readUTF(), Player.class);
 
-                clients.put(webUser, player);
+                    clients.put(webUser, player);
 
-                DataOutputStream dataOutputStream = webUser.getDataOutputStream();
-                dataOutputStream.writeUTF(new PerudoServerResponse(PerudoServerResponseEnum.CONNECTED).toJson());
+                    DataOutputStream dataOutputStream = webUser.getDataOutputStream();
+                    dataOutputStream.writeUTF(new PerudoServerResponse(PerudoServerResponseEnum.CONNECTED).toJson());
 
-                new PerudoServerThread(webUser).start();
-                System.out.println("Connected player = " + player);
+                    new PerudoServerThread(webUser).start();
+                    System.out.println("Connected player = " + player);
+                }
+                catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
-            catch (IOException ex) {
-                ex.printStackTrace();
+        }
+        finally {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -86,10 +97,12 @@ public class PerudoServer extends Thread{
                 e.printStackTrace();
             }
         }).start();
+        System.out.println("PerudoServer.startGame " + party.getId());
     }
 
     public void joinParty(WebUser webUser, Party party) {
         party.addPlayer(webUser, clients.get(webUser));
+        System.out.println("PerudoServer.joinParty " + party.getId());
     }
 
     synchronized private boolean tryProceedGameCommand(PerudoClientCommand perudoClientCommand, WebUser webUser) {
@@ -122,7 +135,12 @@ public class PerudoServer extends Thread{
                 return true;
             }
             else if (perudoClientCommand.isLeave()) {
-                //TODO leave
+                try {
+                    webUser.disconnect();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //todo disconnect
                 return true;
             }
             else if (perudoClientCommand.isMaputo()) {
