@@ -13,5 +13,9 @@ public enum PerudoServerResponseEnum {
     CONNECTED,
     PARTIES_LIST,
     JOINED_PARTY,
-    JOIN_ERROR
+    JOIN_ERROR,
+    AUTH_ERROR,
+    AUTH_SUCCESS,
+    REG_ERROR,
+    REG_SUCCESS
 }

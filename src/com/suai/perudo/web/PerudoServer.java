@@ -3,6 +3,7 @@ package com.suai.perudo.web;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.suai.perudo.data.DataIO;
 import com.suai.perudo.model.PerudoModel;
 import com.suai.perudo.model.Player;
 import javafx.util.Pair;
@@ -23,22 +24,25 @@ public class PerudoServer extends Thread{
     private GsonBuilder builder = new GsonBuilder();
     private Gson gson = builder.create();
 
+    private DataIO dataIO;
+
     private ArrayList<Party> parties = new ArrayList<>();
     private HashMap<WebUser, Player> clients = new HashMap<>();
-    /*private PerudoModel model;
-    private String message;
-    private boolean newTurn = false;
-    private HashMap<WebUser, Player> players = new HashMap<>();*/
 
     private ServerSocket serverSocket;
     private int port;
 
 
 
-    public PerudoServer(int port) throws IOException, ClassNotFoundException {
+    public PerudoServer(int port) {
         this.port = port;
         System.out.println("PerudoServer.PerudoServer");
         System.out.println("port = " + port);
+        try {
+            this.dataIO = new DataIO();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -82,7 +86,7 @@ public class PerudoServer extends Thread{
         }
     }
 
-    public void startGame(Party party) {
+    private void startGame(Party party) {
         ArrayList<Player> playersList = new ArrayList<>();
         for (Map.Entry<WebUser, Player> entry: party.getPlayers().entrySet()) {
             playersList.add(entry.getValue());
@@ -100,7 +104,7 @@ public class PerudoServer extends Thread{
         System.out.println("PerudoServer.startGame " + party.getId());
     }
 
-    public void joinParty(WebUser webUser, Party party) {
+    private void joinParty(WebUser webUser, Party party) {
         party.addPlayer(webUser, clients.get(webUser));
         System.out.println("PerudoServer.joinParty " + party.getId());
     }
@@ -112,40 +116,42 @@ public class PerudoServer extends Thread{
             return false;
         }
         else {
-            if (perudoClientCommand.isBid()) {
-                Pair bid = perudoClientCommand.getBid();
-                if (party.getModel().tryMakeBid(player, (int)bid.getKey(), (int)bid.getValue()))
+            PerudoClientCommandEnum command = perudoClientCommand.getCommand();
+            switch (command){
+                case BID:
+                    Pair bid = perudoClientCommand.getBid();
+                    if (party.getModel().tryMakeBid(player, (int)bid.getKey(), (int)bid.getValue()))
+                        return true;
+                    else
+                        return false;
+                case DOUBT:
+                    String loser;
+                    if (party.getModel().doubt(player)) {
+                        loser = party.getModel().getCurrentBidPlayer().getName();
+                    }
+                    else {
+                        loser = player.getName();
+                    }
+                    party.setMessage(loser + " loosing one dice!");
+                    if (party.getModel().getPlayers().size() == 1) {
+                        party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName()+" is the winner!");
+                    }
+                    party.setNewTurn(true);
                     return true;
-                else
-                    return false;
-            }
-            else if (perudoClientCommand.isDoubt()) {
-                String loser;
-                if (party.getModel().doubt(player)) {
-                    loser = party.getModel().getCurrentBidPlayer().getName();
-                }
-                else {
-                    loser = player.getName();
-                }
-                party.setMessage(loser + " loosing one dice!");
-                if (party.getModel().getPlayers().size() == 1) {
-                    party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName()+" is the winner!");
-                }
-                party.setNewTurn(true);
-                return true;
-            }
-            else if (perudoClientCommand.isLeave()) {
-                try {
-                    webUser.disconnect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                //todo disconnect
-                return true;
-            }
-            else if (perudoClientCommand.isMaputo()) {
-                party.getModel().setMaputo(true);
-                return true;
+                case LEAVE:
+                    try {
+                        webUser.disconnect();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //todo disconnect
+                    return true;
+                case MAPUTO:
+                    party.getModel().setMaputo(true);
+                    return true;
+                case START_GAME:
+                    startGame(party);
+                    return true;
             }
         }
         return false;
@@ -159,7 +165,7 @@ public class PerudoServer extends Thread{
                 webUser.getDataOutputStream().writeUTF(response.toJson());
                 return;
             }
-            boolean stateChanged = tryProceedGameCommand(perudoClientCommand, webUser); //todo wrong_turn etc.
+            boolean stateChanged = tryProceedGameCommand(perudoClientCommand, webUser);
             if (stateChanged) {
                 resendChangesToClients(party);
             }
@@ -169,22 +175,50 @@ public class PerudoServer extends Thread{
             }
         }
         else {
-            if (perudoClientCommand.isGetParties()) {
-                PerudoServerResponse response = new PerudoServerResponse(PerudoServerResponseEnum.PARTIES_LIST, parties);
-                webUser.getDataOutputStream().writeUTF(response.toJson());
-            }
-            if (perudoClientCommand.isJoin()) {
-                Party partyForJoin = perudoClientCommand.getParty();
-                joinParty(webUser, partyForJoin);
-                webUser.setCurrentParty(partyForJoin);
-                PerudoServerResponse response = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
-                webUser.getDataOutputStream().writeUTF(response.toJson());
-            }
-            if (perudoClientCommand.isNewParty()) {
-                Party party = new Party(id++);
-                party.addPlayer(webUser, clients.get(webUser));
-                PerudoServerResponse response = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
-                webUser.getDataOutputStream().writeUTF(response.toJson());
+            PerudoClientCommandEnum command = perudoClientCommand.getCommand();
+            switch (command) {
+                case GET_PARTIES:
+                    PerudoServerResponse response = new PerudoServerResponse(PerudoServerResponseEnum.PARTIES_LIST, parties);
+                    webUser.getDataOutputStream().writeUTF(response.toJson());
+                    break;
+                case JOIN:
+                    Party partyForJoin = perudoClientCommand.getParty();
+                    joinParty(webUser, partyForJoin);
+                    webUser.setCurrentParty(partyForJoin);
+                    PerudoServerResponse joinResponse = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
+                    webUser.getDataOutputStream().writeUTF(joinResponse.toJson());
+                    break;
+                case NEW_PARTY:
+                    Party party = new Party(id++);
+                    party.addPlayer(webUser, clients.get(webUser));
+                    PerudoServerResponse newPartyResponse = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
+                    webUser.getDataOutputStream().writeUTF(newPartyResponse.toJson());
+                    break;
+                case DISCONNECT:
+                    //todo disconnect
+                    break;
+                case LOGIN:
+                    boolean rightData = dataIO.checkPassword(perudoClientCommand.getLogin(), perudoClientCommand.getPassword());
+                    if (rightData) {
+                        PerudoServerResponse loggedResponse = new PerudoServerResponse(PerudoServerResponseEnum.AUTH_SUCCESS);
+                        webUser.getDataOutputStream().writeUTF(loggedResponse.toJson());
+                    }
+                    else {
+                        PerudoServerResponse loggedResponse = new PerudoServerResponse(PerudoServerResponseEnum.AUTH_ERROR);
+                        webUser.getDataOutputStream().writeUTF(loggedResponse.toJson());
+                    }
+                    break;
+                case REGISTER:
+                    boolean rightReg = dataIO.addUser(perudoClientCommand.getLogin(), perudoClientCommand.getPassword());
+                    PerudoServerResponse loggedResponse;
+                    if (rightReg) {
+                        loggedResponse = new PerudoServerResponse(PerudoServerResponseEnum.REG_SUCCESS);
+                    }
+                    else {
+                        loggedResponse = new PerudoServerResponse(PerudoServerResponseEnum.REG_ERROR);
+                    }
+                    webUser.getDataOutputStream().writeUTF(loggedResponse.toJson());
+                    break;
             }
         }
     }

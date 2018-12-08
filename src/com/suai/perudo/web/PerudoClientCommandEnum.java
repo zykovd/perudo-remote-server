@@ -12,5 +12,8 @@ public enum PerudoClientCommandEnum {
     JOIN,
     GET_PARTIES,
     NEW_PARTY,
-    DISCONNECT
+    START_GAME,
+    DISCONNECT,
+    LOGIN,
+    REGISTER
 }
