@@ -1,6 +1,5 @@
 package com.suai.perudo.web;
 
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.suai.perudo.data.DataIO;
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PerudoServer extends Thread{
+public class PerudoRemoteServer extends Thread{
 
     private long id;
 
@@ -34,9 +33,9 @@ public class PerudoServer extends Thread{
 
 
 
-    public PerudoServer(int port) {
+    public PerudoRemoteServer(int port) {
         this.port = port;
-        System.out.println("PerudoServer.PerudoServer");
+        System.out.println("PerudoRemoteServer.PerudoRemoteServer");
         System.out.println("port = " + port);
         try {
             this.dataIO = new DataIO();
@@ -101,12 +100,12 @@ public class PerudoServer extends Thread{
                 e.printStackTrace();
             }
         }).start();
-        System.out.println("PerudoServer.startGame " + party.getId());
+        System.out.println("PerudoRemoteServer.startGame " + party.getId());
     }
 
     private void joinParty(WebUser webUser, Party party) {
         party.addPlayer(webUser, clients.get(webUser));
-        System.out.println("PerudoServer.joinParty " + party.getId());
+        System.out.println("PerudoRemoteServer.joinParty " + party.getId());
     }
 
     synchronized private boolean tryProceedGameCommand(PerudoClientCommand perudoClientCommand, WebUser webUser) {
