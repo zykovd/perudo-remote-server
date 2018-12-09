@@ -27,11 +27,11 @@ public class PerudoServerResponse implements Serializable{
     private int[] dices;
 
     private ArrayList<Player> players;
-    private ArrayList<Party> parties;
+    private ArrayList<PartyHeader> parties;
 
     private String message;
 
-    public PerudoServerResponse(PerudoServerResponseEnum responseEnum, ArrayList<Party> parties) {
+    public PerudoServerResponse(PerudoServerResponseEnum responseEnum, ArrayList<PartyHeader> parties) {
         this.responseEnum = responseEnum;
         this.dices = null;
         switch (responseEnum) {
@@ -165,11 +165,11 @@ public class PerudoServerResponse implements Serializable{
         this.message = message;
     }
 
-    public ArrayList<Party> getParties() {
+    public ArrayList<PartyHeader> getParties() {
         return parties;
     }
 
-    public void setParties(ArrayList<Party> parties) {
+    public void setParties(ArrayList<PartyHeader> parties) {
         this.parties = parties;
     }
 
@@ -180,20 +180,20 @@ public class PerudoServerResponse implements Serializable{
 
     @Override
     public String toString() {
-        return "PerudoServerResponse{" +
-                "responseEnum=" + responseEnum +
-                ", totalDicesCount=" + totalDicesCount +
-                ", currentBidQuantity=" + currentBidQuantity +
-                ", currentBidValue=" + currentBidValue +
-                ", currentTurnPlayerName='" + currentTurnPlayerName + '\'' +
-                ", currentBidPlayerName='" + currentBidPlayerName + '\'' +
-                ", isMaputo=" + isMaputo +
-                ", isGameStarted=" + isGameStarted +
-                ", dices=" + Arrays.toString(dices) +
-                ", players=" + players +
-                ", message='" + message + '\'' +
-                '}';
+        final StringBuilder sb = new StringBuilder("PerudoServerResponse{");
+        sb.append("responseEnum=").append(responseEnum);
+        sb.append(", totalDicesCount=").append(totalDicesCount);
+        sb.append(", currentBidQuantity=").append(currentBidQuantity);
+        sb.append(", currentBidValue=").append(currentBidValue);
+        sb.append(", currentTurnPlayerName='").append(currentTurnPlayerName).append('\'');
+        sb.append(", currentBidPlayerName='").append(currentBidPlayerName).append('\'');
+        sb.append(", isMaputo=").append(isMaputo);
+        sb.append(", isGameStarted=").append(isGameStarted);
+        sb.append(", dices=").append(Arrays.toString(dices));
+        sb.append(", players=").append(players);
+        sb.append(", parties=").append(parties);
+        sb.append(", message='").append(message).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
-
-
 }
