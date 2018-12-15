@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class Party {
     private long id;
+    private String title;
     private PerudoModel model;
     private String message;
     private boolean newTurn = false;
@@ -14,12 +15,12 @@ public class Party {
 
     public Party(long id) {
         this.id = id;
-        this.message = "Party" + id;
+        this.title = "Party" + id;
     }
 
-    public Party(long id, String message) {
+    public Party(long id, String title) {
         this.id = id;
-        this.message = message;
+        this.title = title;
     }
 
     public PerudoModel getModel() {
@@ -28,6 +29,14 @@ public class Party {
 
     public void setModel(PerudoModel model) {
         this.model = model;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getMessage() {
@@ -54,12 +63,21 @@ public class Party {
         this.players = players;
     }
 
-    public void addPlayer(WebUser webUser, Player player) {
-        players.put(webUser, player);
+    public void addPlayer(WebUser webUser) {
+        players.put(webUser, new Player(webUser.getLogin()));
+    }
+
+    public void removePlayer(WebUser webUser, Player player) {
+        model.removePlayer(player);
+        players.remove(webUser, player);
     }
 
     public long getId() {
         return id;
+    }
+
+    public boolean contains(WebUser webUser) {
+        return players.containsKey(webUser);
     }
 
     public PartyHeader getPartyHeader() {

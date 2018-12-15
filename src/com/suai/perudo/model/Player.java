@@ -61,4 +61,12 @@ public class Player implements Serializable{
         return gson.toJson(this);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (this.getClass() != obj.getClass())
+            return false;
+        return this.getName().equals(((Player) obj).getName());
+    }
 }

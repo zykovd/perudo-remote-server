@@ -24,6 +24,8 @@ public class WebUser {
     private DataOutputStream dataOutputStream;
     private Party currentParty;
 
+    private String login;
+
     public WebUser(Socket socket) throws IOException {
         this.socket = socket;
         this.dataInputStream = new DataInputStream(socket.getInputStream());
@@ -50,5 +52,34 @@ public class WebUser {
         dataInputStream.close();
         dataOutputStream.close();
         socket.close();
+    }
+
+    public boolean isConnected() {
+        if (socket == null)
+            return false;
+        else
+            return socket.isConnected();
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (this.getClass() != obj.getClass())
+            return false;
+        return this.getLogin().equals(((WebUser) obj).getLogin());
+    }
+
+    @Override
+    public int hashCode() {
+        return login.hashCode();
     }
 }

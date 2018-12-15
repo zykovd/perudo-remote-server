@@ -59,6 +59,9 @@ public class PerudoServerResponse implements Serializable{
             case JOIN_ERROR:
                 message = "Could not connect to party!";
                 break;
+            case GAME_END:
+                message = "Game ended!";
+                break;
             default:
                 message = "Something went wrong!";
                 break;
@@ -71,6 +74,15 @@ public class PerudoServerResponse implements Serializable{
         this.dices = dices;
         switch (responseEnum) {
             case CONNECTED:
+                break;
+            case JOINED_PARTY:
+                this.isMaputo = model.isMaputo();
+                this.isGameStarted = model.isGameStarted();
+                this.currentTurnPlayerName = model.getCurrentTurnPlayer().getName();
+                this.totalDicesCount = model.getTotalDicesCount();
+                this.currentBidQuantity = model.getCurrentBidQuantity();
+                this.currentBidValue = model.getCurrentBidValue();
+                this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
                 break;
             case GAME_START:
                 this.isMaputo = model.isMaputo();

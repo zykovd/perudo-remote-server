@@ -2,12 +2,12 @@ package com.suai.perudo.web;
 
 public class PartyHeader {
     private long id;
-    private String message;
+    private String title;
     private int hash;
 
     public PartyHeader(Party party) {
         this.id = party.getId();
-        this.message = party.getMessage();
+        this.title = party.getTitle();
         this.hash = party.hashCode();
     }
 
@@ -15,8 +15,8 @@ public class PartyHeader {
         return id;
     }
 
-    public String getMessage() {
-        return message;
+    public String getTitle() {
+        return title;
     }
 
     public int getHash() {

@@ -17,5 +17,7 @@ public enum PerudoServerResponseEnum {
     AUTH_ERROR,
     AUTH_SUCCESS,
     REG_ERROR,
-    REG_SUCCESS
+    REG_SUCCESS,
+    GAME_END,
+    LEFT_GAME
 }

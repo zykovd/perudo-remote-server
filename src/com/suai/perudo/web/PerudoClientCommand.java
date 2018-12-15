@@ -14,11 +14,12 @@ import java.io.Serializable;
 public class PerudoClientCommand implements Serializable{
     private PerudoClientCommandEnum commandEnum;
 
-    private int currentBidQuantity = 0;
-    private int currentBidValue = 0;
+    private int currentBidQuantity;
+    private int currentBidValue;
     private PartyHeader partyHeader = null;
     private String login;
     private String password;
+    private String message;
 
     public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum){
         this.commandEnum = perudoClientCommandEnum;
@@ -27,6 +28,11 @@ public class PerudoClientCommand implements Serializable{
     public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, PartyHeader partyHeader){
         this.commandEnum = perudoClientCommandEnum;
         this.partyHeader = partyHeader;
+    }
+
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String message){
+        this.commandEnum = perudoClientCommandEnum;
+        this.message = message;
     }
 
     public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String login, String password){
@@ -65,6 +71,14 @@ public class PerudoClientCommand implements Serializable{
 
     public String getPassword() {
         return password;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String toJson() {

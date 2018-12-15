@@ -51,6 +51,17 @@ public class DataIO {
         }
     }
 
+    public void refreshParty(Party party) {
+        String path = pathParties + party.getId() +".json";
+        if (Files.exists(Paths.get(path))) {
+            try {
+                Files.write(Paths.get(path), gson.toJson(party).getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void removeParty(Party party) throws IOException {
         Files.deleteIfExists(Paths.get(pathParties + party.getId() +".json"));
     }

@@ -26,6 +26,7 @@ public class PerudoModel implements Serializable {
     private int currentTurn = 0;
 
     private boolean isGameStarted = false;
+    private boolean isGameEnded = false;
 
     public PerudoModel() {
     }
@@ -80,7 +81,10 @@ public class PerudoModel implements Serializable {
     }
 
     public Player getCurrentTurnPlayer() {
-        return players.get(currentTurn);
+        if (players.size() != 0)
+            return players.get(currentTurn);
+        else
+            return null;
     }
 
     public boolean tryMakeBid(Player player, int quantity, int value) {
@@ -195,6 +199,11 @@ public class PerudoModel implements Serializable {
         }
     }
 
+    public void removePlayer(Player player) {
+        if (players.contains(player))
+            players.remove(player);
+    }
+
     public int getTotalDicesCount() {
         return totalDicesCount;
     }
@@ -273,5 +282,13 @@ public class PerudoModel implements Serializable {
 
     public void setCurrentTurn(int currentTurn) {
         this.currentTurn = currentTurn;
+    }
+
+    public boolean isGameEnded() {
+        return isGameEnded;
+    }
+
+    public void setGameEnded(boolean gameEnded) {
+        isGameEnded = gameEnded;
     }
 }
