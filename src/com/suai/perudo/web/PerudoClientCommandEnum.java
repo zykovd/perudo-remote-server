@@ -9,6 +9,7 @@ public enum PerudoClientCommandEnum {
     DOUBT,
     LEAVE,
     MAPUTO,
+    NOT_MAPUTO,
     JOIN,
     GET_PARTIES,
     NEW_PARTY,
@@ -17,3 +18,4 @@ public enum PerudoClientCommandEnum {
     LOGIN,
     REGISTER
 }
+

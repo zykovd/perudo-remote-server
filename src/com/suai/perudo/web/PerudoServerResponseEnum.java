@@ -10,6 +10,7 @@ public enum PerudoServerResponseEnum {
     WRONG_TURN,
     TURN_ACCEPTED,
     ROUND_RESULT,
+    IS_MAPUTO,
     CONNECTED,
     PARTIES_LIST,
     JOINED_PARTY,

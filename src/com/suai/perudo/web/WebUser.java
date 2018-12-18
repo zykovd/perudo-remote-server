@@ -49,6 +49,7 @@ public class WebUser {
     }
 
     public void disconnect() throws IOException {
+        currentParty = null;
         dataInputStream.close();
         dataOutputStream.close();
         socket.close();

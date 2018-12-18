@@ -8,15 +8,11 @@ import com.suai.perudo.model.Player;
 import javafx.util.Pair;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class PerudoRemoteServer extends Thread {
 
@@ -161,6 +157,7 @@ public class PerudoRemoteServer extends Thread {
                         loser = player.getName();
                     }
                     party.setMessage(loser + " loosing one dice!");
+                    party.setLoser(loser);
                     if (party.getModel().getPlayers().size() == 1) {
                         party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName() + " is the winner!");
                         party.getModel().setGameEnded(true);
@@ -171,6 +168,7 @@ public class PerudoRemoteServer extends Thread {
                     party.setNewTurn(true);
                     party.setMessage(player.getName() + " left the game!");
                     party.removePlayer(webUser, player);
+                    party.getModel().setCurrentTurn(0);//TODO Check
                     PerudoServerResponse response = new PerudoServerResponse(PerudoServerResponseEnum.LEFT_GAME);
                     sendResponse(webUser, response);
                     webUser.setCurrentParty(null);
@@ -178,6 +176,11 @@ public class PerudoRemoteServer extends Thread {
                     return true;
                 case MAPUTO:
                     party.getModel().setMaputo(true);
+                    party.setMessage("Maputo round!");
+                    return true;
+                case NOT_MAPUTO:
+                    party.getModel().setMaputo(false);
+                    party.setMessage("Ordinary round!");
                     return true;
                 case START_GAME:
                     startGame(party);
@@ -299,8 +302,14 @@ public class PerudoRemoteServer extends Thread {
             if (webUser.isConnected()) {
                 PerudoServerResponse response;
                 if (party.isNewTurn()) {
-                    response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.ROUND_RESULT, party.getPlayers().get(webUser).getDices());
-                    response.setMessage(party.getMessage());
+                    if (party.getLoser().equals(webUser.getLogin()) && party.getPlayers().get(webUser).getNumberOfDices() == 1) {
+                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.IS_MAPUTO, party.getPlayers().get(webUser).getDices());
+                        response.setMessage(party.getMessage());
+                    }
+                    else {
+                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.ROUND_RESULT, party.getPlayers().get(webUser).getDices());
+                        response.setMessage(party.getMessage());
+                    }
                 } else {
                     response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.TURN_ACCEPTED, party.getPlayers().get(webUser).getDices());
                 }
@@ -347,7 +356,6 @@ public class PerudoRemoteServer extends Thread {
             PerudoClientCommand perudoClientCommand;
             while (true) {
                 try {
-                    //TODO disconnect if exception
                     perudoClientCommand = gson.fromJson(dataInputStream.readUTF(), PerudoClientCommand.class);
                     System.out.println(perudoClientCommand.toJson());
                     if (perudoClientCommand != null) {

@@ -10,6 +10,7 @@ public class Party {
     private String title;
     private PerudoModel model;
     private String message;
+    private String loser;
     private boolean newTurn = false;
     private HashMap<WebUser, Player> players = new HashMap<>();
 
@@ -21,6 +22,14 @@ public class Party {
     public Party(long id, String title) {
         this.id = id;
         this.title = title;
+    }
+
+    public String getLoser() {
+        return loser;
+    }
+
+    public void setLoser(String loser) {
+        this.loser = loser;
     }
 
     public PerudoModel getModel() {
