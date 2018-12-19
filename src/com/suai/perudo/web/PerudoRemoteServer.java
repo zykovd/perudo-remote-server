@@ -41,7 +41,6 @@ public class PerudoRemoteServer extends Thread {
         }
 
 
-
         //TODO Remove this tests
         try {
             Party party = new Party(id++);
@@ -123,8 +122,7 @@ public class PerudoRemoteServer extends Thread {
     private void joinParty(WebUser webUser, Party party) {
         if (!party.contains(webUser)) {
             party.addPlayer(webUser);
-        }
-        else {
+        } else {
             Player player = party.getPlayers().get(webUser);
             party.getPlayers().remove(webUser, player);
             party.getPlayers().put(webUser, player);
@@ -156,11 +154,12 @@ public class PerudoRemoteServer extends Thread {
                     } else {
                         loser = player.getName();
                     }
-                    party.setMessage(loser + " loosing one dice!");
+                    party.setMessage(loser + " loosing one dice!\n" + party.getModel().getDoubtMessage());
                     party.setLoser(loser);
                     if (party.getModel().getPlayers().size() == 1) {
                         party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName() + " is the winner!");
                         party.getModel().setGameEnded(true);
+                        parties.remove(party);
                     }
                     party.setNewTurn(true);
                     return true;
@@ -287,7 +286,7 @@ public class PerudoRemoteServer extends Thread {
         return null;
     }
 
-    public void sendResponse(WebUser webUser, PerudoServerResponse response){
+    public void sendResponse(WebUser webUser, PerudoServerResponse response) {
         if (webUser.isConnected()) {
             try {
                 webUser.getDataOutputStream().writeUTF(response.toJson());
@@ -305,8 +304,7 @@ public class PerudoRemoteServer extends Thread {
                     if (party.getLoser().equals(webUser.getLogin()) && party.getPlayers().get(webUser).getNumberOfDices() == 1) {
                         response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.IS_MAPUTO, party.getPlayers().get(webUser).getDices());
                         response.setMessage(party.getMessage());
-                    }
-                    else {
+                    } else {
                         response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.ROUND_RESULT, party.getPlayers().get(webUser).getDices());
                         response.setMessage(party.getMessage());
                     }

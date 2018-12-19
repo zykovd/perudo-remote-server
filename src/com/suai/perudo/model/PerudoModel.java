@@ -28,6 +28,8 @@ public class PerudoModel implements Serializable {
     private boolean isGameStarted = false;
     private boolean isGameEnded = false;
 
+    private String doubtMessage;
+
     public PerudoModel() {
     }
 
@@ -185,12 +187,14 @@ public class PerudoModel implements Serializable {
 
     private boolean isPreviousBidWon(int[] dices) {
         if (currentBidValue == 1) {
+            doubtMessage = "There were " + String.valueOf(dices[0]) + " " + getDiceValueString();
             if (currentBidQuantity > dices[0]) {
                 return false;
             } else {
                 return true;
             }
         } else {
+            doubtMessage = "There were " + String.valueOf(dices[0]+ dices[currentBidValue - 1]) + " " + getDiceValueString();
             if (currentBidQuantity > dices[0] + dices[currentBidValue - 1]) {
                 return false;
             } else {
@@ -199,9 +203,33 @@ public class PerudoModel implements Serializable {
         }
     }
 
+    private String getDiceValueString() {
+        switch (currentBidValue) {
+            case 1:
+                return "one(s)";
+            case 2:
+                return "two(s)";
+            case 3:
+                return "three(s)";
+            case 4:
+                return "four(s)";
+            case 5:
+                return "five(s)";
+            case 6:
+                return "six(s)";
+            default:
+                return "";
+        }
+
+    }
+
     public void removePlayer(Player player) {
         if (players.contains(player))
             players.remove(player);
+    }
+
+    public String getDoubtMessage() {
+        return doubtMessage;
     }
 
     public int getTotalDicesCount() {
