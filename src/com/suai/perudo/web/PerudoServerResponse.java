@@ -96,7 +96,7 @@ public class PerudoServerResponse implements Serializable{
                 this.currentBidQuantity = model.getCurrentBidQuantity();
                 this.currentBidValue = model.getCurrentBidValue();
                 this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
-                this.chatMessages = chatMessages;
+                //this.chatMessages = chatMessages;
                 break;
             case GAME_START:
                 this.isMaputo = model.isMaputo();

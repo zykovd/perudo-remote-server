@@ -55,7 +55,7 @@ public class PerudoModel implements Serializable {
             for (int i = 0; i < 6; ++i)
                 dices[i] = 0;
             for (int i = 0; i < player.getNumberOfDices(); ++i) {
-                int randDiceValue = random.nextInt(5);
+                int randDiceValue = random.nextInt(6);
                 dices[randDiceValue]++;
             }
             player.setDices(dices);
