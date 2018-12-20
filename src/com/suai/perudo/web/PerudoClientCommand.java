@@ -57,6 +57,10 @@ public class PerudoClientCommand implements Serializable {
                 (commandEnum == PerudoClientCommandEnum.START_GAME) || (commandEnum == PerudoClientCommandEnum.CHAT_MESSAGE);
     }
 
+    public boolean isTurnCommand() {
+        return (commandEnum == PerudoClientCommandEnum.BID) || (commandEnum == PerudoClientCommandEnum.DOUBT) || (commandEnum == PerudoClientCommandEnum.MAPUTO);
+    }
+
     public PartyHeader getPartyHeader() {
         return partyHeader;
     }

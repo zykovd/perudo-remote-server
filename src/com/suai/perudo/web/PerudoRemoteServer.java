@@ -197,7 +197,7 @@ public class PerudoRemoteServer extends Thread {
         if (perudoClientCommand.isGameCommand()) {
             Party party = webUser.getCurrentParty();
             //Player player222 = party.getPlayers().get(webUser);
-            if (!party.getModel().isPlayersTurn(party.getPlayers().get(webUser))) {
+            if (!party.getModel().isPlayersTurn(party.getPlayers().get(webUser)) && perudoClientCommand.isTurnCommand()) {
                 PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.WRONG_TURN, party.getPlayers().get(webUser).getDices());
                 sendResponse(webUser, response);
                 return;
