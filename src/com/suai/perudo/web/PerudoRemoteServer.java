@@ -53,7 +53,7 @@ public class PerudoRemoteServer extends Thread {
             e.printStackTrace();
         }
 
-        try {
+        /*try {
             Party party = new Party(id++);
             startGame(party);
             dataIO.addParty(party);
@@ -70,7 +70,7 @@ public class PerudoRemoteServer extends Thread {
             parties.add(party2);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
     }
@@ -93,7 +93,6 @@ public class PerudoRemoteServer extends Thread {
                     WebUser webUser = new WebUser(clientSocket);
                     //DataInputStream dataInputStream = webUser.getDataInputStream();
                     //Player player = gson.fromJson(dataInputStream.readUTF(), Player.class);
-
                     //DataOutputStream dataOutputStream = webUser.getDataOutputStream();
                     //dataOutputStream.writeUTF(new PerudoServerResponse(PerudoServerResponseEnum.CONNECTED).toJson());
 
@@ -114,7 +113,7 @@ public class PerudoRemoteServer extends Thread {
 
     private void startGame(Party party) {
         ArrayList<Player> playersList = new ArrayList<>();
-        for (Map.Entry<WebUser, Player> entry : party.getPlayers().entrySet()) {
+        for (Map.Entry<String, Player> entry : party.getPlayers().entrySet()) {
             playersList.add(entry.getValue());
         }
         party.setModel(new PerudoModel(playersList, 6));
@@ -134,9 +133,11 @@ public class PerudoRemoteServer extends Thread {
         if (!party.contains(webUser)) {
             party.addPlayer(webUser);
         } else {
-            Player player = party.getPlayers().get(webUser);
-            party.getPlayers().remove(webUser, player);
-            party.getPlayers().put(webUser, player);
+//            Player player = party.getPlayers().get(webUser);
+//            party.getPlayers().remove(webUser, player);
+//            party.getPlayers().put(webUser, player);
+            party.getWebUsers().remove(webUser);
+            party.getWebUsers().add(webUser);
         }
         System.out.println("PerudoRemoteServer.joinParty " + party.getId());
     }
@@ -145,7 +146,7 @@ public class PerudoRemoteServer extends Thread {
         Player player = null;
         Party party = webUser.getCurrentParty();
         if (party != null) {
-            player = webUser.getCurrentParty().getPlayers().get(webUser);
+            player = webUser.getCurrentParty().getPlayers().get(webUser.getLogin());
         }
         if (party == null || perudoClientCommand == null) {
             return false;
@@ -183,6 +184,10 @@ public class PerudoRemoteServer extends Thread {
                     party.setMessage(player.getName() + " left the game!");
                     party.removePlayer(webUser, player);
                     party.getModel().setCurrentTurn(0);//TODO Check
+                    if (party.getModel().getPlayers().size() == 1) {
+                        party.getModel().setGameEnded(true);
+                        party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName() + " is the winner!");
+                    }
                     PerudoServerResponse response = new PerudoServerResponse(PerudoServerResponseEnum.LEFT_GAME);
                     sendResponse(webUser, response);
                     webUser.setCurrentParty(null);
@@ -207,9 +212,15 @@ public class PerudoRemoteServer extends Thread {
     synchronized private void proceedCommand(WebUser webUser, PerudoClientCommand perudoClientCommand) throws IOException {
         if (perudoClientCommand.isGameCommand()) {
             Party party = webUser.getCurrentParty();
+            if (party != null && party.getModel().isGameEnded()) {
+                PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.GAME_END, party.getPlayers().get(webUser.getLogin()).getDices());
+                response.setMessage(party.getMessage());
+                sendResponse(webUser, response);
+                return;
+            }
             //Player player222 = party.getPlayers().get(webUser);
-            if (!party.getModel().isPlayersTurn(party.getPlayers().get(webUser)) && perudoClientCommand.isTurnCommand()) {
-                PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.WRONG_TURN, party.getPlayers().get(webUser).getDices());
+            if (!party.getModel().isPlayersTurn(party.getPlayers().get(webUser.getLogin())) && perudoClientCommand.isTurnCommand()) {
+                PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.WRONG_TURN, party.getPlayers().get(webUser.getLogin()).getDices());
                 sendResponse(webUser, response);
                 return;
             }
@@ -218,8 +229,10 @@ public class PerudoRemoteServer extends Thread {
                 dataIO.refreshParty(party);
                 resendChangesToClients(party);
                 party.setNewChatMessage(false);
+                party.setNewTurn(false);
+                party.getModel().setDeletedPlayer(null);
             } else {
-                PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.INVALID_BID, party.getPlayers().get(webUser).getDices());
+                PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.INVALID_BID, party.getPlayers().get(webUser.getLogin()).getDices());
                 sendResponse(webUser, response);
             }
         } else {
@@ -241,7 +254,7 @@ public class PerudoRemoteServer extends Thread {
                         joinParty(webUser, party);
                         webUser.setCurrentParty(party);
                         PerudoServerResponse joinHeader = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
-                        PerudoServerResponse joinResponse = new PerudoServerResponse(party.getModel(), party.getChatMessages(), PerudoServerResponseEnum.JOINED_PARTY, party.getPlayers().get(webUser).getDices());
+                        PerudoServerResponse joinResponse = new PerudoServerResponse(party.getModel(), party.getChatMessages(), PerudoServerResponseEnum.JOINED_PARTY, party.getPlayers().get(webUser.getLogin()).getDices());
                         sendResponse(webUser, joinHeader);
                         sendResponse(webUser, joinResponse);
                     } else {
@@ -258,6 +271,9 @@ public class PerudoRemoteServer extends Thread {
                     PerudoServerResponse newPartyResponse = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
                     sendResponse(webUser, newPartyResponse);
                     new DelayedGameStartThread(newParty, 10000).start();
+                    break;
+                case RETURN:
+                    webUser.setCurrentParty(null);
                     break;
                 case DISCONNECT:
                     webUser.disconnect();
@@ -313,15 +329,15 @@ public class PerudoRemoteServer extends Thread {
     }
 
     private void resendChangesToClients(Party party) throws IOException {
-        for (WebUser webUser : party.getPlayers().keySet()) {
+        for (WebUser webUser : party.getWebUsers()) {
             if (webUser.isConnected()) {
                 PerudoServerResponse response;
                 if (party.isNewTurn()) {
-                    if (party.getLoser().equals(webUser.getLogin()) && party.getPlayers().get(webUser).getNumberOfDices() == 1) {
-                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.IS_MAPUTO, party.getPlayers().get(webUser).getDices());
+                    if (party.getLoser().equals(webUser.getLogin()) && party.getPlayers().get(webUser.getLogin()).getNumberOfDices() == 1) {
+                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.IS_MAPUTO, party.getPlayers().get(webUser.getLogin()).getDices());
                         response.setMessage(party.getMessage());
                     } else {
-                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.ROUND_RESULT, party.getPlayers().get(webUser).getDices());
+                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.ROUND_RESULT, party.getPlayers().get(webUser.getLogin()).getDices());
                         response.setMessage(party.getMessage());
                     }
                 } else {
@@ -329,7 +345,7 @@ public class PerudoRemoteServer extends Thread {
                         response = new PerudoServerResponse(PerudoServerResponseEnum.NEW_CHAT_MESSAGE, party.getChatMessages().getLast());
                     }
                     else {
-                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.TURN_ACCEPTED, party.getPlayers().get(webUser).getDices());
+                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.TURN_ACCEPTED, party.getPlayers().get(webUser.getLogin()).getDices());
                     }
 
                 }

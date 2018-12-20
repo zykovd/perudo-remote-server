@@ -2,6 +2,7 @@ package com.suai.perudo.model;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -14,11 +15,11 @@ import java.util.ArrayList;
 
 public class Player implements Serializable{
 
-    private String name;
+    @Expose private String name;
 
-    private int numberOfDices;
-    private int[] dices = new int[6];
-    private int[] previousDices = new int[6];
+    @Expose private int numberOfDices;
+    @Expose private int[] dices = new int[6];
+    @Expose private int[] previousDices = new int[6];
 
     public Player(String name) {
         this.name = name;

@@ -15,9 +15,14 @@ import java.util.stream.Stream;
 
 public class DataIO {
 
-    private String pathUsers = "/home/dmitry/IdeaProjects/perudo-remote-server/data/users.json";
-    private String pathPartiesDir = "/home/dmitry/IdeaProjects/perudo-remote-server/data/parties/";
-    private String pathParties = "/home/dmitry/IdeaProjects/perudo-remote-server/data/parties/party";
+//    private String pathUsers = "/home/dmitry/IdeaProjects/perudo-remote-server/data/users.json";
+//    private String pathPartiesDir = "/home/dmitry/IdeaProjects/perudo-remote-server/data/parties/";
+//    private String pathParties = "/home/dmitry/IdeaProjects/perudo-remote-server/data/parties/party";
+
+    private String pathUsers = "./data/users.json";
+    private String pathPartiesDir = "./data/parties/";
+    private String pathParties = "./data/parties/party";
+
     private GsonBuilder builder = new GsonBuilder();
     private Gson gson = builder.setPrettyPrinting()
                                 .create();
@@ -40,6 +45,7 @@ public class DataIO {
         while (dir.hasNext()) {
             Path path = dir.next();
             Party party = gson.fromJson(new String(Files.readAllBytes(path)), Party.class);
+            party.setWebUsers(new ArrayList<>());
             res.add(party);
         }
         return res;
@@ -57,7 +63,7 @@ public class DataIO {
         String path = pathParties + party.getId() +".json";
         if (!Files.exists(Paths.get(path))) {
             Files.createFile(Paths.get(path));
-            Files.write(Paths.get(path), gson.toJson(party).getBytes());
+            Files.write(Paths.get(path), party.toJson().getBytes());
         }
     }
 
@@ -65,7 +71,7 @@ public class DataIO {
         String path = pathParties + party.getId() +".json";
         if (Files.exists(Paths.get(path))) {
             try {
-                Files.write(Paths.get(path), gson.toJson(party).getBytes());
+                Files.write(Paths.get(path), party.toJson().getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
             }

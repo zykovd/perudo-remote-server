@@ -125,6 +125,32 @@ public class PerudoServerResponse implements Serializable{
                 this.currentBidValue = model.getCurrentBidValue();
                 this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
                 break;
+            case GAME_END:
+                this.isMaputo = model.isMaputo();
+                this.isGameStarted = model.isGameStarted();
+                this.currentTurnPlayerName = model.getCurrentTurnPlayer().getName();
+                this.totalDicesCount = model.getTotalDicesCount();
+                this.currentBidQuantity = model.getCurrentBidQuantity();
+                this.currentBidValue = model.getCurrentBidValue();
+                this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
+                this.players = new ArrayList<>(model.getPlayers());
+                if (model.getDeletedPlayer() != null) {
+                    players.add(model.getDeletedPlayer());
+                }
+                break;
+            case IS_MAPUTO:
+                this.isMaputo = model.isMaputo();
+                this.isGameStarted = model.isGameStarted();
+                this.currentTurnPlayerName = model.getCurrentTurnPlayer().getName();
+                this.totalDicesCount = model.getTotalDicesCount();
+                this.currentBidQuantity = model.getCurrentBidQuantity();
+                this.currentBidValue = model.getCurrentBidValue();
+                this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
+                this.players = new ArrayList<>(model.getPlayers());
+                if (model.getDeletedPlayer() != null) {
+                    players.add(model.getDeletedPlayer());
+                }
+                break;
             case ROUND_RESULT:
                 this.isMaputo = model.isMaputo();
                 this.isGameStarted = model.isGameStarted();
@@ -133,7 +159,10 @@ public class PerudoServerResponse implements Serializable{
                 this.currentBidQuantity = model.getCurrentBidQuantity();
                 this.currentBidValue = model.getCurrentBidValue();
                 this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
-                this.players = model.getPlayers();
+                this.players = new ArrayList<>(model.getPlayers());
+                if (model.getDeletedPlayer() != null) {
+                    players.add(model.getDeletedPlayer());
+                }
                 break;
             case TURN_ACCEPTED:
                 this.isMaputo = model.isMaputo();

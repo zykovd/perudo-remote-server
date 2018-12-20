@@ -1,5 +1,7 @@
 package com.suai.perudo.model;
 
+import com.google.gson.annotations.Expose;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,24 +13,25 @@ import java.util.Random;
 
 public class PerudoModel implements Serializable {
 
-    private ArrayList<Player> players = new ArrayList<>();
+    @Expose private ArrayList<Player> players = new ArrayList<>();
 //    private PerudoQueue queue = new PerudoQueue();
 
-    private int totalDicesCount; //Бесполезная статистика
-    private int initDicesPerPlayer = 5;
-    private Random random = new Random(System.currentTimeMillis());
+    @Expose private int totalDicesCount; //Бесполезная статистика
+    @Expose private int initDicesPerPlayer = 5;
+    @Expose private Random random = new Random(System.currentTimeMillis());
 
-    private int currentBidQuantity;
-    private int currentBidValue;
-    private Player currentBidPlayer;
+    @Expose private int currentBidQuantity;
+    @Expose private int currentBidValue;
+    @Expose private Player currentBidPlayer;
 
-    private boolean isMaputo = false;
-    private int currentTurn = 0;
+    @Expose private boolean isMaputo = false;
+    @Expose private int currentTurn = 0;
 
-    private boolean isGameStarted = false;
-    private boolean isGameEnded = false;
+    @Expose private boolean isGameStarted = false;
+    @Expose private boolean isGameEnded = false;
 
-    private String doubtMessage;
+    @Expose private String doubtMessage;
+    @Expose private Player deletedPlayer;
 
     public PerudoModel() {
     }
@@ -84,7 +87,10 @@ public class PerudoModel implements Serializable {
 
     public Player getCurrentTurnPlayer() {
         if (players.size() != 0)
-            return players.get(currentTurn);
+            if (players.size() == 1)
+                return players.get(0);
+            else
+                return players.get(currentTurn);
         else
             return null;
     }
@@ -142,7 +148,7 @@ public class PerudoModel implements Serializable {
                 }
             }
         } else {
-            if (value != currentBidValue) {
+            if (value != currentBidValue && currentBidValue != 0) {
                 return false;
             } else {
                 if (quantity > currentBidQuantity) {
@@ -171,14 +177,15 @@ public class PerudoModel implements Serializable {
             isPlayerRight = false;
             player.setNumberOfDices(player.getNumberOfDices() - 1);
             if (player.getNumberOfDices() == 0) {
-                players.remove(player);
+                deletedPlayer = players.remove(players.indexOf(player));
             }
         } else {
             isPlayerRight = true;
             currentBidPlayer.setNumberOfDices(currentBidPlayer.getNumberOfDices() - 1);
             if (currentBidPlayer.getNumberOfDices() == 0) {
-                players.remove(currentBidPlayer);
+                deletedPlayer = players.remove(players.indexOf(currentBidPlayer));
             }
+            System.out.println("deletedPlayer = " + deletedPlayer);
             backwardTurnTransition();
         }
         refreshDices();
@@ -318,5 +325,13 @@ public class PerudoModel implements Serializable {
 
     public void setGameEnded(boolean gameEnded) {
         isGameEnded = gameEnded;
+    }
+
+    public Player getDeletedPlayer() {
+        return deletedPlayer;
+    }
+
+    public void setDeletedPlayer(Player deletedPlayer) {
+        this.deletedPlayer = deletedPlayer;
     }
 }

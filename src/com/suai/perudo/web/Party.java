@@ -1,23 +1,34 @@
 package com.suai.perudo.web;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import com.suai.perudo.model.PerudoModel;
 import com.suai.perudo.model.Player;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class Party {
-    private long id;
-    private String title;
-    private PerudoModel model;
-    private String message;
-    private String loser;
-    private boolean newTurn = false;
-    private HashMap<WebUser, Player> players = new HashMap<>();
+public class Party implements Serializable {
+    @Expose private long id;
+    @Expose private String title;
+    @Expose private PerudoModel model;
+    @Expose private String message;
+    @Expose private String loser;
+    @Expose private boolean newTurn = false;
 
-    private LinkedList<ChatMessage> chatMessages = new LinkedList<>();
-    private int maxChatMessages = 30;
-    private boolean newChatMessage = false;
+    //@SerializedName("PlayersMap")
+    @Expose private HashMap<String, Player> players = new HashMap<>();
+
+
+    private ArrayList<WebUser> webUsers = new ArrayList<>();
+
+    @Expose private LinkedList<ChatMessage> chatMessages = new LinkedList<>();
+    @Expose private int maxChatMessages = 30;
+    @Expose private boolean newChatMessage = false;
 
     public Party(long id) {
         this.id = id;
@@ -84,21 +95,23 @@ public class Party {
         this.newTurn = newTurn;
     }
 
-    public HashMap<WebUser, Player> getPlayers() {
+    public HashMap<String, Player> getPlayers() {
         return players;
     }
 
-    public void setPlayers(HashMap<WebUser, Player> players) {
+    public void setPlayers(HashMap<String, Player> players) {
         this.players = players;
     }
 
     public void addPlayer(WebUser webUser) {
-        players.put(webUser, new Player(webUser.getLogin()));
+        players.put(webUser.getLogin(), new Player(webUser.getLogin()));
+        webUsers.add(webUser);
     }
 
     public void removePlayer(WebUser webUser, Player player) {
         model.removePlayer(player);
-        players.remove(webUser, player);
+        players.remove(webUser.getLogin(), player);
+        webUsers.remove(webUser);
     }
 
     public LinkedList<ChatMessage> getChatMessages() {
@@ -110,10 +123,39 @@ public class Party {
     }
 
     public boolean contains(WebUser webUser) {
-        return players.containsKey(webUser);
+        return players.containsKey(webUser.getLogin());
     }
 
     public PartyHeader getPartyHeader() {
         return new PartyHeader(this);
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setChatMessages(LinkedList<ChatMessage> chatMessages) {
+        this.chatMessages = chatMessages;
+    }
+
+    public int getMaxChatMessages() {
+        return maxChatMessages;
+    }
+
+    public void setMaxChatMessages(int maxChatMessages) {
+        this.maxChatMessages = maxChatMessages;
+    }
+
+    public ArrayList<WebUser> getWebUsers() {
+        return webUsers;
+    }
+
+    public void setWebUsers(ArrayList<WebUser> webUsers) {
+        this.webUsers = webUsers;
+    }
+
+    public String toJson() {
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
+        return gson.toJson(this);
     }
 }

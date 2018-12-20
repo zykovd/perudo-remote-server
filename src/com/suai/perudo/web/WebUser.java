@@ -1,29 +1,22 @@
 package com.suai.perudo.web;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
+import com.suai.perudo.model.Player;
+
+import java.io.*;
 import java.net.Socket;
 
 /**
  * Created by dmitry on 13.09.18.
  */
 
-public class WebUser {
+public class WebUser implements Serializable {
 
     private Socket socket;
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
     private Party currentParty;
 
+    private Player currentPlayer;
     private String login;
 
     public WebUser(Socket socket) throws IOException {
@@ -82,5 +75,37 @@ public class WebUser {
     @Override
     public int hashCode() {
         return login.hashCode();
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public void setDataInputStream(DataInputStream dataInputStream) {
+        this.dataInputStream = dataInputStream;
+    }
+
+    public void setDataOutputStream(DataOutputStream dataOutputStream) {
+        this.dataOutputStream = dataOutputStream;
+    }
+
+    public Player getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    public void setCurrentPlayer(Player currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("WebUser{");
+        sb.append("login='").append(login).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
