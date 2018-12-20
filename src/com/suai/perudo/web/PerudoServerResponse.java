@@ -8,6 +8,7 @@ import com.suai.perudo.model.Player;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  * Created by dmitry on 04.11.18.
@@ -28,6 +29,7 @@ public class PerudoServerResponse implements Serializable{
 
     private ArrayList<Player> players;
     private ArrayList<PartyHeader> parties;
+    private LinkedList<ChatMessage> chatMessages;
 
     private String message;
 
@@ -68,6 +70,17 @@ public class PerudoServerResponse implements Serializable{
         }
     }
 
+    public PerudoServerResponse(PerudoServerResponseEnum responseEnum, ChatMessage message) {
+        this.responseEnum = responseEnum;
+        this.dices = null;
+        switch (responseEnum) {
+            case NEW_CHAT_MESSAGE:
+                chatMessages = new LinkedList<>();
+                chatMessages.addLast(message);
+                break;
+        }
+    }
+
 
     public PerudoServerResponse(PerudoModel model, PerudoServerResponseEnum responseEnum, int[] dices) {
         this.responseEnum = responseEnum;
@@ -83,6 +96,7 @@ public class PerudoServerResponse implements Serializable{
                 this.currentBidQuantity = model.getCurrentBidQuantity();
                 this.currentBidValue = model.getCurrentBidValue();
                 this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
+                this.chatMessages = chatMessages;
                 break;
             case GAME_START:
                 this.isMaputo = model.isMaputo();
@@ -131,6 +145,31 @@ public class PerudoServerResponse implements Serializable{
                 this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
                 break;
         }
+    }
+
+    public PerudoServerResponse(PerudoModel model, LinkedList<ChatMessage> chatMessages, PerudoServerResponseEnum responseEnum, int[] dices) {
+        this.responseEnum = responseEnum;
+        this.dices = dices;
+        switch (responseEnum) {
+            case JOINED_PARTY:
+                this.isMaputo = model.isMaputo();
+                this.isGameStarted = model.isGameStarted();
+                this.currentTurnPlayerName = model.getCurrentTurnPlayer().getName();
+                this.totalDicesCount = model.getTotalDicesCount();
+                this.currentBidQuantity = model.getCurrentBidQuantity();
+                this.currentBidValue = model.getCurrentBidValue();
+                this.currentBidPlayerName = model.getCurrentBidPlayer().getName();
+                this.chatMessages = chatMessages;
+                break;
+        }
+    }
+
+    public LinkedList<ChatMessage> getChatMessages() {
+        return chatMessages;
+    }
+
+    public void setChatMessages(LinkedList<ChatMessage> chatMessages) {
+        this.chatMessages = chatMessages;
     }
 
     public int getTotalDicesCount() {

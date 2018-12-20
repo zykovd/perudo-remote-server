@@ -147,6 +147,10 @@ public class PerudoRemoteServer extends Thread {
                         return true;
                     else
                         return false;
+                case CHAT_MESSAGE:
+                    party.addChatMessage(new ChatMessage(webUser.getLogin(), perudoClientCommand.getMessage()));
+                    party.setNewChatMessage(true);
+                    return true;
                 case DOUBT:
                     String loser;
                     if (party.getModel().doubt(player)) {
@@ -202,6 +206,7 @@ public class PerudoRemoteServer extends Thread {
             if (stateChanged) {
                 dataIO.refreshParty(party);
                 resendChangesToClients(party);
+                party.setNewChatMessage(false);
             } else {
                 PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.INVALID_BID, party.getPlayers().get(webUser).getDices());
                 sendResponse(webUser, response);
@@ -225,7 +230,7 @@ public class PerudoRemoteServer extends Thread {
                         joinParty(webUser, party);
                         webUser.setCurrentParty(party);
                         PerudoServerResponse joinHeader = new PerudoServerResponse(PerudoServerResponseEnum.JOINED_PARTY);
-                        PerudoServerResponse joinResponse = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.JOINED_PARTY, party.getPlayers().get(webUser).getDices());//TODO Send dices
+                        PerudoServerResponse joinResponse = new PerudoServerResponse(party.getModel(), party.getChatMessages(), PerudoServerResponseEnum.JOINED_PARTY, party.getPlayers().get(webUser).getDices());
                         sendResponse(webUser, joinHeader);
                         sendResponse(webUser, joinResponse);
                     } else {
@@ -309,7 +314,13 @@ public class PerudoRemoteServer extends Thread {
                         response.setMessage(party.getMessage());
                     }
                 } else {
-                    response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.TURN_ACCEPTED, party.getPlayers().get(webUser).getDices());
+                    if (party.isNewChatMessage()) {
+                        response = new PerudoServerResponse(PerudoServerResponseEnum.NEW_CHAT_MESSAGE, party.getChatMessages().getLast());
+                    }
+                    else {
+                        response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.TURN_ACCEPTED, party.getPlayers().get(webUser).getDices());
+                    }
+
                 }
                 sendResponse(webUser, response);
 //            if (party.getModel().isGameEnded()) {

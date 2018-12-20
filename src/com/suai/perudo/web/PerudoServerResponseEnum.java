@@ -20,5 +20,6 @@ public enum PerudoServerResponseEnum {
     REG_ERROR,
     REG_SUCCESS,
     GAME_END,
-    LEFT_GAME
+    LEFT_GAME,
+    NEW_CHAT_MESSAGE
 }

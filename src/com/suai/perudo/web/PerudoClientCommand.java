@@ -11,7 +11,7 @@ import java.io.Serializable;
  * Created by dmitry on 04.11.18.
  */
 
-public class PerudoClientCommand implements Serializable{
+public class PerudoClientCommand implements Serializable {
     private PerudoClientCommandEnum commandEnum;
 
     private int currentBidQuantity;
@@ -21,27 +21,27 @@ public class PerudoClientCommand implements Serializable{
     private String password;
     private String message;
 
-    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum){
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum) {
         this.commandEnum = perudoClientCommandEnum;
     }
 
-    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, PartyHeader partyHeader){
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, PartyHeader partyHeader) {
         this.commandEnum = perudoClientCommandEnum;
         this.partyHeader = partyHeader;
     }
 
-    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String message){
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String message) {
         this.commandEnum = perudoClientCommandEnum;
         this.message = message;
     }
 
-    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String login, String password){
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String login, String password) {
         this.commandEnum = perudoClientCommandEnum;
         this.login = login;
         this.password = password;
     }
 
-    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, int currentBidQuantity, int currentBidValue){
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, int currentBidQuantity, int currentBidValue) {
         this.commandEnum = perudoClientCommandEnum;
         this.currentBidQuantity = currentBidQuantity;
         this.currentBidValue = currentBidValue;
@@ -51,10 +51,10 @@ public class PerudoClientCommand implements Serializable{
         return commandEnum;
     }
 
-    public boolean isGameCommand(){
+    public boolean isGameCommand() {
         return (commandEnum == PerudoClientCommandEnum.BID) || (commandEnum == PerudoClientCommandEnum.DOUBT) ||
                 (commandEnum == PerudoClientCommandEnum.LEAVE) || (commandEnum == PerudoClientCommandEnum.MAPUTO) ||
-                (commandEnum == PerudoClientCommandEnum.START_GAME);
+                (commandEnum == PerudoClientCommandEnum.START_GAME) || (commandEnum == PerudoClientCommandEnum.CHAT_MESSAGE);
     }
 
     public PartyHeader getPartyHeader() {
