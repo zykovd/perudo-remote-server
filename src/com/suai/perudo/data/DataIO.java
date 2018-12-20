@@ -8,17 +8,21 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 public class DataIO {
 
     private String pathUsers = "/home/dmitry/IdeaProjects/perudo-remote-server/data/users.json";
+    private String pathPartiesDir = "/home/dmitry/IdeaProjects/perudo-remote-server/data/parties/";
     private String pathParties = "/home/dmitry/IdeaProjects/perudo-remote-server/data/parties/party";
     private GsonBuilder builder = new GsonBuilder();
     private Gson gson = builder.setPrettyPrinting()
                                 .create();
 
     private UserDB userDB;
-    //private PartiesDB partiesDB;
 
     public DataIO() throws IOException {
         String usersJson = new String(Files.readAllBytes(Paths.get(pathUsers)));
@@ -26,13 +30,19 @@ public class DataIO {
         if (userDB == null) {
             userDB = new UserDB();
         }
+    }
 
-        /*String partiesJson = new String(Files.readAllBytes(Paths.get(pathParties)));
-        partiesDB = gson.fromJson(partiesJson, PartiesDB.class);
-        if (partiesDB == null) {
-            partiesDB = new PartiesDB();
-        }*/
-
+    public ArrayList<Party> loadPartys() throws IOException {
+        ArrayList<Party> res = new ArrayList<>();
+        Iterator<Path> dir = Files.list(Paths.get(pathPartiesDir)).sorted().iterator();
+        long partiesNum = Files.list(Paths.get(pathPartiesDir)).count();
+        System.out.println("partiesNum = " + partiesNum);
+        while (dir.hasNext()) {
+            Path path = dir.next();
+            Party party = gson.fromJson(new String(Files.readAllBytes(path)), Party.class);
+            res.add(party);
+        }
+        return res;
     }
 
     public boolean addUser(String login, String password) throws IOException {

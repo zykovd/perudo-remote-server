@@ -43,6 +43,17 @@ public class PerudoRemoteServer extends Thread {
 
         //TODO Remove this tests
         try {
+            parties = dataIO.loadPartys();
+            id = parties.size();
+            System.out.println("parties = " + parties);
+            for (Party party: parties) {
+                System.out.println(party.getId() + " " + party.getTitle());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
             Party party = new Party(id++);
             startGame(party);
             dataIO.addParty(party);
