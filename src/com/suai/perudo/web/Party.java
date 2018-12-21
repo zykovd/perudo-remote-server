@@ -20,10 +20,10 @@ public class Party implements Serializable {
     @Expose private String loser;
     @Expose private boolean newTurn = false;
 
+    @Expose private int numberOfBots;
+
     //@SerializedName("PlayersMap")
     @Expose private HashMap<String, Player> players = new HashMap<>();
-
-
     private ArrayList<WebUser> webUsers = new ArrayList<>();
 
     @Expose private LinkedList<ChatMessage> chatMessages = new LinkedList<>();
@@ -61,6 +61,14 @@ public class Party implements Serializable {
 
     public void setLoser(String loser) {
         this.loser = loser;
+    }
+
+    public int getNumberOfBots() {
+        return numberOfBots;
+    }
+
+    public void setNumberOfBots(int numberOfBots) {
+        this.numberOfBots = numberOfBots;
     }
 
     public PerudoModel getModel() {

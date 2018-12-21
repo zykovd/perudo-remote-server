@@ -21,8 +21,20 @@ public class Player implements Serializable{
     @Expose private int[] dices = new int[6];
     @Expose private int[] previousDices = new int[6];
 
+    @Expose private boolean isBot = false;
+
+
+    public boolean isBot() {
+        return isBot;
+    }
+
     public Player(String name) {
         this.name = name;
+    }
+
+    public Player(String name, boolean isBot) {
+        this.name = name;
+        this.isBot = isBot;
     }
 
     public int[] getDices() {

@@ -20,6 +20,7 @@ public class PerudoClientCommand implements Serializable {
     private String login;
     private String password;
     private String message;
+    private int number;
 
     public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum) {
         this.commandEnum = perudoClientCommandEnum;
@@ -33,6 +34,12 @@ public class PerudoClientCommand implements Serializable {
     public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String message) {
         this.commandEnum = perudoClientCommandEnum;
         this.message = message;
+    }
+
+    public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String message, int numberOfBots) {
+        this.commandEnum = perudoClientCommandEnum;
+        this.message = message;
+        this.number = numberOfBots;
     }
 
     public PerudoClientCommand(PerudoClientCommandEnum perudoClientCommandEnum, String login, String password) {
@@ -83,6 +90,10 @@ public class PerudoClientCommand implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public int getNumber() {
+        return number;
     }
 
     public String toJson() {

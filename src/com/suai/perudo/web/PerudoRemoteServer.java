@@ -42,7 +42,7 @@ public class PerudoRemoteServer extends Thread {
 
 
         //TODO Remove this tests
-        try {
+        /*try {
             parties = dataIO.loadPartys();
             id = parties.size();
             System.out.println("parties = " + parties);
@@ -51,7 +51,7 @@ public class PerudoRemoteServer extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
         /*try {
             Party party = new Party(id++);
@@ -115,6 +115,9 @@ public class PerudoRemoteServer extends Thread {
         ArrayList<Player> playersList = new ArrayList<>();
         for (Map.Entry<String, Player> entry : party.getPlayers().entrySet()) {
             playersList.add(entry.getValue());
+        }
+        for (int i = 0; i < party.getNumberOfBots(); ++i) {
+            playersList.add(new Player("Bot" + String.valueOf(i), true));
         }
         party.setModel(new PerudoModel(playersList, 6));
         party.getModel().setGameStarted(true);
@@ -231,6 +234,20 @@ public class PerudoRemoteServer extends Thread {
                 party.setNewChatMessage(false);
                 party.setNewTurn(false);
                 party.getModel().setDeletedPlayer(null);
+                if (!party.getModel().isGameEnded()) {
+                    try {
+                        while (cpuTurn(party) && !party.getModel().isGameEnded()) {
+                            Thread.sleep(2000);
+                            resendChangesToClients(party);
+                            dataIO.refreshParty(party);
+                            party.setNewChatMessage(false);
+                            party.setNewTurn(false);
+                            party.getModel().setDeletedPlayer(null);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             } else {
                 PerudoServerResponse response = new PerudoServerResponse(party.getModel(), PerudoServerResponseEnum.INVALID_BID, party.getPlayers().get(webUser.getLogin()).getDices());
                 sendResponse(webUser, response);
@@ -264,6 +281,7 @@ public class PerudoRemoteServer extends Thread {
                     break;
                 case NEW_PARTY:
                     Party newParty = new Party(id++, perudoClientCommand.getMessage());
+                    newParty.setNumberOfBots(perudoClientCommand.getNumber());
                     newParty.addPlayer(webUser);
                     webUser.setCurrentParty(newParty);
                     dataIO.addParty(newParty);
@@ -358,6 +376,95 @@ public class PerudoRemoteServer extends Thread {
         }
     }
 
+    private boolean cpuTurn(Party party) {
+        if (party.getModel().getCurrentTurnPlayer().isBot()) {
+            int quantity = party.getModel().getCurrentBidQuantity();
+            int value = party.getModel().getCurrentBidValue();
+            double choosed_prob = 0;
+            int min_quantity = 0;
+            int min_value = 0;
+            double min_part = 1;
+            int totalDicesCount = party.getModel().getTotalDicesCount();
+
+            if (quantity == 0 || value == 0) {
+                System.out.println("Bot bidding!");
+                return party.getModel().tryMakeBid(party.getModel().getCurrentTurnPlayer(), 1, 6);
+            }
+
+            if (quantity > (totalDicesCount/2 - (int)(Math.random()*2))) {
+                System.out.println("Bot doubting!");
+                Player bot = party.getModel().getCurrentTurnPlayer();
+                String loser;
+                if (party.getModel().doubt(bot)) {
+                    loser = party.getModel().getCurrentBidPlayer().getName();
+                } else {
+                    loser = bot.getName();
+                }
+                party.setMessage(loser + " loosing one dice!\n" + party.getModel().getDoubtMessage());
+                party.setLoser(loser);
+                if (party.getModel().getPlayers().size() == 1) {
+                    party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName() + " is the winner!");
+                    party.getModel().setGameEnded(true);
+                    parties.remove(party);
+                }
+                party.setNewTurn(true);
+                return true;
+            }
+
+            if (value != 1 && !party.getModel().isMaputo()) {
+                for (int i = 1; i < 5; ++i) {
+                    for (int j = 0; j < 3; ++j) {
+                        int[] dices = party.getModel().getCurrentTurnPlayer().getDices();
+                        choosed_prob = ((double) (quantity - dices[0] - dices[i] + j) / ((double) totalDicesCount - dices[0] - dices[i]));
+                        if (choosed_prob < min_part) {
+                            if (j == 0 && i > value || j != 0) {
+                                min_quantity = quantity + j;
+                                min_value = i;
+                                min_part = choosed_prob;
+                            }
+                        }
+                    }
+                }
+                if (min_value != 0 && min_quantity >= totalDicesCount / 2) {
+                    min_value = 0;
+                    if (totalDicesCount % 2 == 1) {
+                        min_quantity = (totalDicesCount / 2) + 1;
+                    } else {
+                        min_quantity = (totalDicesCount / 2);
+                    }
+                }
+                System.out.println("Bot bidding!");
+                return party.getModel().tryMakeBid(party.getModel().getCurrentTurnPlayer(), min_quantity, min_value + 1);
+            }
+            else {
+                if (quantity > totalDicesCount/4) {
+                    System.out.println("Bot doubting!");
+                    Player bot = party.getModel().getCurrentTurnPlayer();
+                    String loser;
+                    if (party.getModel().doubt(bot)) {
+                        loser = party.getModel().getCurrentBidPlayer().getName();
+                    } else {
+                        loser = bot.getName();
+                    }
+                    int d = 1;
+                    party.setMessage(loser + " loosing one dice!\n" + party.getModel().getDoubtMessage());
+                    party.setLoser(loser);
+                    if (party.getModel().getPlayers().size() == 1) {
+                        party.setMessage(party.getMessage() + "\n" + party.getModel().getPlayers().get(0).getName() + " is the winner!");
+                        party.getModel().setGameEnded(true);
+                        parties.remove(party);
+                    }
+                    party.setNewTurn(true);
+                    return true;
+                }
+                else {
+                    return party.getModel().tryMakeBid(party.getModel().getCurrentTurnPlayer(), quantity+1, value);
+                }
+            }
+        }
+        return false;
+    }
+
     private class DelayedGameStartThread extends Thread {
         private final Party party;
         private final int delay;
@@ -375,6 +482,7 @@ public class PerudoRemoteServer extends Thread {
                 e.printStackTrace();
             }
             startGame(party);
+            dataIO.refreshParty(party);
         }
     }
 

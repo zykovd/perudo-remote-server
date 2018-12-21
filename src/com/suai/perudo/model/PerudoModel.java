@@ -108,7 +108,7 @@ public class PerudoModel implements Serializable {
                         return false;
                     }
                 } else {
-                    if (quantity > (currentBidQuantity / 2)) {
+                    if (quantity >= (currentBidQuantity / 2)) {
                         currentBidQuantity = quantity;
                         currentBidValue = value;
                         currentBidPlayer = player;
@@ -120,7 +120,7 @@ public class PerudoModel implements Serializable {
                 }
             } else {
                 if (currentBidValue == 1) {
-                    if (quantity >= currentBidQuantity * 2) {
+                    if (quantity > currentBidQuantity * 2) {
                         currentBidQuantity = quantity;
                         currentBidValue = value;
                         currentBidPlayer = player;
